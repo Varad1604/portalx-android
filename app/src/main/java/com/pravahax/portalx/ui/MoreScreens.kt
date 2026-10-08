@@ -162,7 +162,7 @@ fun AnnouncementsScreen() {
             val id = a.idOf()
             SectionCard(highlighted = unread) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(a.str("title") ?: "Announcement", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                    Text(a.str("title") ?: "Announcement", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f)) // web: font-display text-lg font-semibold
                     if (unread) StatusChip("New", MaterialTheme.colorScheme.primary)
                 }
                 Text(listOfNotNull(a.str("author"), a.str("publishedAt")?.let { fmtDateTime(it) }, a.str("teamName")).joinToString(" · "),
@@ -172,7 +172,7 @@ fun AnnouncementsScreen() {
                 var expanded by rememberSaveable(keys[i]) { mutableStateOf(false) }
                 val long = body.length > 280 || body.count { it == '\n' } > 5
                 Text(body, style = MaterialTheme.typography.bodyMedium, maxLines = if (expanded || !long) Int.MAX_VALUE else 6, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.animateContentSize())
+                    modifier = if (LocalReduceMotion.current) Modifier else Modifier.animateContentSize())
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (long) TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Show less" else "Read more") }
                     Spacer(Modifier.weight(1f))

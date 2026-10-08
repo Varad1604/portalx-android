@@ -49,6 +49,17 @@ object Dates {
         in 0..11 -> "Good morning"; in 12..16 -> "Good afternoon"; else -> "Good evening"
     }
 
+    /** "Overdue · 7 Oct", "Due today", "Due tomorrow", "Due 12 Oct" (IST). */
+    fun dueLabel(due: String?, done: Boolean, today: LocalDate = today()): String {
+        val d = day(due) ?: return "Due " + (due ?: "—")
+        return when {
+            !done && d.isBefore(today) -> "Overdue · " + shortDate(due)
+            d == today -> "Due today"
+            d == today.plusDays(1) -> "Due tomorrow"
+            else -> "Due " + shortDate(due)
+        }
+    }
+
     fun isOverdue(due: String?, done: Boolean, today: LocalDate = today()): Boolean =
         !done && (day(due)?.isBefore(today) ?: false)
 }

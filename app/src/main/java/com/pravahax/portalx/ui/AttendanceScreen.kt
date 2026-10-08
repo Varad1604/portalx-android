@@ -11,6 +11,8 @@ import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -228,7 +230,8 @@ fun AttendanceScreen(user: SessionUser) {
                     checkOut == null -> if (onBreak) "break" else "in"
                     else -> "done"
                 }
-                AnimatedContent(state, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "att") { s ->
+                val reduce = LocalReduceMotion.current
+                AnimatedContent(state, transitionSpec = { if (reduce) EnterTransition.None togetherWith ExitTransition.None else fadeIn() togetherWith fadeOut() }, label = "att") { s ->
                     when (s) {
                         "loading" -> Column(verticalArrangement = Arrangement.spacedBy(Space.md)) { Skeleton(40.dp); Skeleton(150.dp, Modifier.fillMaxWidth(0.5f).align(Alignment.CenterHorizontally), CircleShape) }
                         "unknown" -> Text("Today's attendance couldn't be loaded. Pull down to retry.", color = MaterialTheme.colorScheme.onSurfaceVariant)

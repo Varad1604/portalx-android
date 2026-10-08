@@ -46,6 +46,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -102,7 +103,8 @@ private sealed interface Auth {
 }
 
 @Composable
-fun PortalApp(repo: Repo, online: Boolean = true) {
+/** @param startRoute first tab to show (tests/screenshots); users always start on Home. */
+fun PortalApp(repo: Repo, online: Boolean = true, startRoute: String = "home") {
     val scope = rememberCoroutineScope()
     var auth by remember {
         mutableStateOf<Auth>(
@@ -155,7 +157,7 @@ fun PortalApp(repo: Repo, online: Boolean = true) {
                     SecureWindow()
                     ChangePasswordScreen(onDone = { u -> auth = Auth.SignedIn(u) }, onSignOut = { signOut(null) })
                 } else CompositionLocalProvider(LocalSessionExpired provides { signOut("Your session expired. Please sign in again.") }) {
-                    MainShell(a.user, online, refreshMe) { signOut(null) }
+                    MainShell(a.user, online, refreshMe, startRoute) { signOut(null) }
                 }
         }
     }
@@ -221,10 +223,10 @@ private val titles = mapOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainShell(user: SessionUser, online: Boolean, refreshMe: suspend () -> Unit, onLogout: () -> Unit) {
+private fun MainShell(user: SessionUser, online: Boolean, refreshMe: suspend () -> Unit, startRoute: String, onLogout: () -> Unit) {
     val nav = rememberNavController()
     val entry by nav.currentBackStackEntryAsState()
-    val route = entry?.destination?.route ?: "home"
+    val route = entry?.destination?.route ?: startRoute
     val isTab = tabs.any { it.route == route }
     val snackbar = remember { SnackbarHostState() }
     val shellScope = rememberCoroutineScope()
@@ -270,13 +272,16 @@ private fun MainShell(user: SessionUser, online: Boolean, refreshMe: suspend () 
                 AnimatedVisibility(isTab, enter = slideInVertically { it } + fadeIn(), exit = slideOutVertically { it } + fadeOut()) {
                     Column {
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        // At very large font sizes five labels can't fit: show only the selected one (icons keep labels for TalkBack).
+                        val bigFont = androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.3f
                         NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
                             tabs.forEach { t ->
                                 val sel = route == t.route
                                 NavigationBarItem(
                                     selected = sel, onClick = { haptics.tap(); go(t.route) },
-                                    icon = { Icon(if (sel) t.selectedIcon else t.icon, null) },
-                                    label = { Text(t.label, style = MaterialTheme.typography.labelMedium, maxLines = 1) },
+                                    icon = { Icon(if (sel) t.selectedIcon else t.icon, if (bigFont && !sel) t.label else null) },
+                                    label = { CappedFontScale(1.3f) { Text(t.label, style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, letterSpacing = 0.sp), maxLines = 1, softWrap = false) } },
+                                    alwaysShowLabel = !bigFont,
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                                         selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -305,7 +310,7 @@ private fun MainShell(user: SessionUser, online: Boolean, refreshMe: suspend () 
             containerColor = MaterialTheme.colorScheme.background,
         ) { pad ->
             val reduce = LocalReduceMotion.current
-            NavHost(nav, "home", Modifier.padding(pad).consumeWindowInsets(pad),
+            NavHost(nav, startRoute, Modifier.padding(pad).consumeWindowInsets(pad),
                 enterTransition = { if (reduce) EnterTransition.None else fadeIn(tween(220)) + slideInHorizontally(tween(260)) { it / 14 } },
                 exitTransition = { if (reduce) ExitTransition.None else fadeOut(tween(160)) },
                 popEnterTransition = { if (reduce) EnterTransition.None else fadeIn(tween(220)) },

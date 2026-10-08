@@ -1,18 +1,11 @@
-# Build output
-build/
-app/build/
 .gradle/
 .kotlin/
-*.apk
-*.aab
-
-# Local / secret files — never commit
+build/
 local.properties
 keystore.properties
 *.jks
 *.keystore
-
-# IDE
+*.apk
+*.aab
 .idea/
 *.iml
-.DS_Store

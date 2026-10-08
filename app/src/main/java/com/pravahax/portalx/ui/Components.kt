@@ -406,8 +406,9 @@ fun Avatar(name: String, size: Dp = 44.dp) {
         .joinToString("") { it.first().uppercaseChar().toString() }.ifEmpty { "?" }
     val tone = avatarTones[(name.hashCode() and Int.MAX_VALUE) % avatarTones.size]
     Box(Modifier.size(size).clip(CircleShape).background(Brush.linearGradient(tone)), contentAlignment = Alignment.Center) {
-        Text(initials, color = Color.White, fontWeight = FontWeight.Bold,
-            style = if (size >= 64.dp) MaterialTheme.typography.headlineSmall.copy(fontFamily = Playfair) else MaterialTheme.typography.labelLarge)
+        // Initials live in a fixed-size circle: they must not grow with the system font size.
+        CappedFontScale(1.0f) { Text(initials, color = Color.White, fontWeight = FontWeight.Bold,
+            style = if (size >= 64.dp) MaterialTheme.typography.headlineSmall.copy(fontFamily = Playfair) else MaterialTheme.typography.labelLarge) }
     }
 }
 

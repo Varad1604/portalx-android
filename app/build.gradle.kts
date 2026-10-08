@@ -66,3 +66,9 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
+
+// v0.3.0: record each unit-test task's runtime classpath so ScreenshotTest can be run outside Gradle
+// (on an x86_64 JVM, where Robolectric's native graphics exist).
+tasks.withType<Test>().configureEach {
+    doFirst { layout.buildDirectory.file("testcp-$name.txt").get().asFile.writeText(classpath.asPath) }
+}

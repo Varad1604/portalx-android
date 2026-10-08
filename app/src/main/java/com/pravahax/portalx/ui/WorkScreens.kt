@@ -130,7 +130,7 @@ private fun TaskCard(t: JsonObject, busy: Boolean, onStatus: (String) -> Unit, o
                 val c = if (overdue) PortalTheme.status.danger else MaterialTheme.colorScheme.onSurfaceVariant
                 Icon(Icons.Outlined.Event, null, Modifier.size(16.dp), tint = c)
                 Spacer(Modifier.width(Space.xs))
-                Text((if (overdue) "Overdue · " else "Due ") + fmtShortDate(due), style = MaterialTheme.typography.bodySmall, color = c)
+                Text(Dates.dueLabel(due, status == "done"), style = MaterialTheme.typography.bodySmall, color = c)
             }
             Spacer(Modifier.weight(1f))
             Box {

@@ -102,6 +102,14 @@ class DatesAndValidationTest {
         assertEquals("https://meet.google.com/abc", Validate.safeWebUrl("https://meet.google.com/abc"))
     }
 
+    @Test fun dueLabelsAreRelativeInIst() {
+        val t = LocalDate.of(2026, 10, 8)
+        assertEquals("Due today", Dates.dueLabel("2026-10-08", false, t))
+        assertEquals("Due tomorrow", Dates.dueLabel("2026-10-09", false, t))
+        assertEquals("Overdue · 7 Oct", Dates.dueLabel("2026-10-07", false, t))
+        assertEquals("Due 7 Oct", Dates.dueLabel("2026-10-07", true, t))
+    }
+
     @Test fun weekWorkedSumsOnlyThisIstWeekMinusBreaks() {
         val rows = Json.parseToJsonElement("""[
             {"attendance_date":"2026-10-06","check_in":"2026-10-06T03:30:00Z","check_out":"2026-10-06T12:30:00Z","total_break_seconds":1800},

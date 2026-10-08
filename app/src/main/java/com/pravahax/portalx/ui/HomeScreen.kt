@@ -104,7 +104,7 @@ fun HomeScreen(user: SessionUser, navigate: (String) -> Unit) {
                         val overdue = Dates.isOverdue(t.str("dueDate"), false)
                         ListRow(
                             t.str("title") ?: "Untitled",
-                            listOfNotNull(t.str("projectName"), t.str("dueDate")?.let { (if (overdue) "Overdue · " else "Due ") + fmtShortDate(it) }).joinToString(" · "),
+                            listOfNotNull(t.str("projectName"), t.str("dueDate")?.let { Dates.dueLabel(it, false) }).joinToString(" · "),
                             trailing = { StatusChip(t.str("priorityLabel") ?: pretty(t.str("priority")), statusColor(t.str("priority"))) },
                             onClick = { navigate("tasks") },
                         )
@@ -177,7 +177,8 @@ private fun AttendanceHero(today: Resource, navigate: (String) -> Unit) {
             .semantics { contentDescription = "Today's attendance. Opens Attendance." },
     ) {
         Column(
-            Modifier.background(Brush.linearGradient(listOf(Web.PrimarySoft, Color.White))).goldGlow().padding(Space.xl).animateContentSize()
+            Modifier.background(Brush.linearGradient(listOf(Web.PrimarySoft, Color.White))).goldGlow().padding(Space.xl)
+                .then(if (LocalReduceMotion.current) Modifier else Modifier.animateContentSize())
         ) {
             if (today.initialLoading) {
                 Kicker("Today"); Spacer(Modifier.height(Space.sm)); Skeleton(28.dp, Modifier.fillMaxWidth(0.6f), MaterialTheme.shapes.small)
@@ -187,7 +188,7 @@ private fun AttendanceHero(today: Resource, navigate: (String) -> Unit) {
             val (dot, title) = when {
                 t == null -> p.neutral to "Attendance"
                 onLeave -> p.warning to "On approved leave"
-                checkIn == null -> p.danger to "Not checked in yet"
+                checkIn == null -> p.warning to "Not checked in yet"
                 checkOut == null -> if (onBreak) p.warning to "On a break" else p.success to "Checked in · ${fmtTime(checkIn)}"
                 else -> p.success to "Day complete"
             }
@@ -245,7 +246,7 @@ private fun StatTile(s: Stat, onClick: () -> Unit) {
         }
         Spacer(Modifier.height(Space.md))
         Text(if (s.count < 0) "—" else "${s.count}", style = MaterialTheme.typography.headlineLarge)
-        Text(s.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(s.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
 
